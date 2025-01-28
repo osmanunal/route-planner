@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+
+  mysql:
+    image: mysql:8
+    restart: always
+    container_name: route_planner
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DATABASE: route_planner
+      MYSQL_USER: route_planner
+      MYSQL_PASSWORD: route_planner
+      MYSQL_ROOT_PASSWORD: route_planner
+    volumes:
+      - mysql:/var/lib/mysql
+
+volumes:
+  mysql:

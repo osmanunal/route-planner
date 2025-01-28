@@ -49,6 +49,10 @@ func (h LocationHandler) Create(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: err.Error()})
 	}
 
+	if errors := utils.Validate(vm); len(errors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: errors[0]})
+	}
+
 	m := vm.ToDBModel(model.Location{})
 
 	err := h.LocationService.Create(ctx.Context(), &m)
@@ -56,7 +60,7 @@ func (h LocationHandler) Create(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(bmodel.Response{Error: errorx.InternalServerError})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(nil)
+	return ctx.SendStatus(fiber.StatusOK)
 }
 
 func (h LocationHandler) Update(ctx *fiber.Ctx) error {
@@ -72,6 +76,10 @@ func (h LocationHandler) Update(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: err.Error()})
 	}
 
+	if errors := utils.Validate(vm); len(errors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: errors[0]})
+	}
+
 	m := vm.ToDBModel(location)
 
 	err = h.LocationService.Update(ctx.Context(), m)
@@ -79,7 +87,7 @@ func (h LocationHandler) Update(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(bmodel.Response{Error: errorx.InternalServerError})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(nil)
+	return ctx.SendStatus(fiber.StatusOK)
 }
 
 func (h LocationHandler) Delete(ctx *fiber.Ctx) error {
@@ -90,5 +98,5 @@ func (h LocationHandler) Delete(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(bmodel.Response{Error: errorx.InternalServerError})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(nil)
+	return ctx.SendStatus(fiber.StatusOK)
 }

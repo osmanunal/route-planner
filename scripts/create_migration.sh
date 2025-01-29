@@ -18,18 +18,18 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func up(ctx context.Context, db *bun.DB) error {
-	return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		return nil
-	})
-}
-
-func down(ctx context.Context, db *bun.DB) error {
-	return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		return nil
-	})
-}
 func init() {
+	up := func(ctx context.Context, db *bun.DB) error {
+		return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) (err error) {
+			return err
+		})
+	}
+
+	down := func(ctx context.Context, db *bun.DB) error {
+		return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) (err error) {
+			return err
+		})
+	}
 	migration.Migrations.MustRegister(up, down)
 }
 EOF

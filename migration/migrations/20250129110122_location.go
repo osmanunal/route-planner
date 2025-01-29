@@ -17,19 +17,20 @@ type Location struct {
 	Color     string
 }
 
-func up(ctx context.Context, db *bun.DB) error {
-	return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		_, err := tx.NewCreateTable().Model(&Location{}).IfNotExists().WithForeignKeys().Exec(ctx)
-		return err
-	})
-}
-
-func down(ctx context.Context, db *bun.DB) error {
-	return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		_, err := tx.NewDropTable().Model(&Location{}).IfExists().Exec(ctx)
-		return err
-	})
-}
 func init() {
+	up := func(ctx context.Context, db *bun.DB) error {
+		return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+			_, err := tx.NewCreateTable().Model(&Location{}).IfNotExists().WithForeignKeys().Exec(ctx)
+			return err
+		})
+	}
+
+	down := func(ctx context.Context, db *bun.DB) error {
+		return db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+			_, err := tx.NewDropTable().Model(&Location{}).IfExists().Exec(ctx)
+			return err
+		})
+	}
+
 	migration.Migrations.MustRegister(up, down)
 }

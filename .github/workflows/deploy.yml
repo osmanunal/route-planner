@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.23'
-          
+
       - name: Run tests
         run: go test -v ./...
 
@@ -27,12 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - name: pwd
-        run: | 
-          pwd 
-          ls -la
-          
+
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
@@ -40,15 +35,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # Create app directory if it doesn't exist
-            mkdir -p ~/app
-            cd ~/app
-            
-            # Remove existing files if any
-            rm -rf *
-            
-            # Clone the repository
-            git clone https://github.com/${{ github.repository }} .
+            cd ~/app/route-planner
+            # Pull the latest changes
+            git pull
             
             # Copy environment variables if needed
             echo "${{ secrets.ENV_FILE }}" > .env

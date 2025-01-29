@@ -15,6 +15,7 @@ type ILocationService interface {
 	Update(ctx context.Context, m model.Location) error
 	Delete(ctx context.Context, id int64) error
 	GetRoute(ctx context.Context, route *model.Location) ([]model.Location, int, error)
+	GetNearbyLocations(ctx context.Context, route *model.Location) ([]model.Location, int, error)
 }
 
 type LocationService struct {
@@ -40,11 +41,13 @@ func (s *LocationService) GetByID(ctx context.Context, id int64) (model.Location
 }
 
 func (s *LocationService) Create(ctx context.Context, m *model.Location) error {
+	m.SetH3Index()
 	_, err := s.DB.NewInsert().Model(m).Exec(ctx)
 	return err
 }
 
 func (s *LocationService) Update(ctx context.Context, m model.Location) error {
+	m.SetH3Index()
 	_, err := s.DB.NewUpdate().Model(&m).WherePK().Exec(ctx)
 	return err
 }
@@ -52,6 +55,23 @@ func (s *LocationService) Update(ctx context.Context, m model.Location) error {
 func (s *LocationService) Delete(ctx context.Context, id int64) error {
 	_, err := s.DB.NewDelete().Model(&model.Location{}).Where("id = ?", id).Exec(ctx)
 	return err
+}
+
+func update(ctx context.Context, db bun.IDB) error {
+	var locations []model.Location
+	err := db.NewSelect().Model(&locations).Scan(ctx)
+	if err != nil {
+		return err
+	}
+	for _, loc := range locations {
+		loc.SetH3Index()
+		_, err = db.NewUpdate().Model(&loc).Column("h3_index").WherePK().Exec(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *LocationService) GetRoute(ctx context.Context, route *model.Location) ([]model.Location, int, error) {
@@ -72,4 +92,28 @@ func (s *LocationService) GetRoute(ctx context.Context, route *model.Location) (
 	})
 
 	return locations, len(locations), nil
+}
+
+func (s *LocationService) GetNearbyLocations(ctx context.Context, route *model.Location) ([]model.Location, int, error) {
+	route.SetH3Index()
+	neighborIndexes := route.GetNeighborIndexes()
+
+	var locations []model.Location
+	query := s.DB.NewSelect().Model(&locations)
+	query.Where("h3_index IN (?)", bun.In(neighborIndexes))
+
+	count, err := query.ScanAndCount(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for i := range locations {
+		locations[i].HaversineDistance(route.Latitude, route.Longitude)
+	}
+
+	sort.Slice(locations, func(i, j int) bool {
+		return locations[i].Distance < locations[j].Distance
+	})
+
+	return locations, count, nil
 }

@@ -125,3 +125,27 @@ func (h LocationHandler) GetRoute(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(bmodel.Response{Data: responseVM, DataCount: count})
 }
+
+func (h LocationHandler) GetNearbyLocations(ctx *fiber.Ctx) error {
+	var vm viewmodel.LocationSortByDistanceRequest
+	if err := ctx.BodyParser(&vm); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: err.Error()})
+	}
+
+	if errors := utils.Validate(vm); len(errors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: errors[0]})
+	}
+
+	m := vm.ToDBModel(model.Location{})
+	locations, count, err := h.LocationService.GetNearbyLocations(ctx.Context(), &m)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(bmodel.Response{Error: errorx.InternalServerError})
+	}
+
+	var responseVM []viewmodel.LocationSortByDistanceResponse
+	for _, location := range locations {
+		responseVM = append(responseVM, viewmodel.LocationSortByDistanceResponse{}.ToViewModel(location))
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(bmodel.Response{Data: responseVM, DataCount: count})
+}

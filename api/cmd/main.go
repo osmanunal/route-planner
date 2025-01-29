@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"route-planner/api/internal/middleware"
 	"route-planner/api/internal/router"
 	"route-planner/pkg/config"
 	"route-planner/pkg/database"
@@ -27,6 +28,7 @@ func main() {
 		WriteTimeout: time.Duration(30) * time.Second,
 		IdleTimeout:  time.Duration(120) * time.Second,
 	})
+	fiberApp.Use(middleware.RateLimiter())
 	fiberApp.Use(cors.New())
 	fiberApp.Use(requestid.New(requestid.Config{
 		Header:     fiber.HeaderXRequestID,

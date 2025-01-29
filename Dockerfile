@@ -2,12 +2,13 @@ FROM golang:1.23-alpine as builder
 
 WORKDIR /app
 
+RUN apk add --no-cache gcc musl-dev
+
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-
-RUN CGO_ENABLED=0 GOOS=linux go build -o main api/cmd/main.go
+RUN go build -o main api/cmd/main.go
 
 # Final stage
 FROM alpine:latest

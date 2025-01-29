@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"github.com/uptrace/bun/schema"
 	"route-planner/pkg/config"
 
 	"database/sql"
@@ -24,6 +25,10 @@ func ConnectDB(config config.DBConfig) *bun.DB {
 	if err != nil {
 		panic(err)
 	}
+
+	schema.SetTableNameInflector(func(s string) string {
+		return s
+	})
 
 	DB = bun.NewDB(sqlDB, mysqldialect.New())
 	if err = DB.Ping(); err != nil {

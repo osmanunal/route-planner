@@ -17,3 +17,27 @@ services:
       - DB_PORT=${DB_PORT}
       - JWT_SECRET=${JWT_SECRET}
       - ENV=prod
+    networks:
+      - route_planner_network
+
+  mysql:
+    image: mysql:8
+    restart: always
+    container_name: route_planner_mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DATABASE: route_planner
+      MYSQL_USER: route_planner
+      MYSQL_PASSWORD: route_planner
+      MYSQL_ROOT_PASSWORD: route_planner
+    networks:
+      - route_planner_network
+    volumes:
+      - mysql:/var/lib/mysql
+
+volumes:
+  mysql:
+
+networks:
+  route_planner_network:

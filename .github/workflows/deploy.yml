@@ -40,5 +40,18 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/app         
+            # Create app directory if it doesn't exist
+            mkdir -p ~/app
+            cd ~/app
+            
+            # Remove existing files if any
+            rm -rf *
+            
+            # Clone the repository
+            git clone https://github.com/${{ github.repository }} .
+            
+            # Copy environment variables if needed
+            echo "${{ secrets.ENV_FILE }}" > .env
+            
+            # Build and start the containers
             docker-compose up --build -d

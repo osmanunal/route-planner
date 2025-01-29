@@ -1,5 +1,5 @@
 devdb:
-	docker-compose -f docker-compose.yml up mysql -d
+	docker-compose -f docker-compose.dev.yml up mysql -d
 
 migrate-up:
 	go run migration/cmd/main.go migrate up

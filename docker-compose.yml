@@ -1,20 +1,19 @@
 version: '3.9'
 
 services:
-
-  mysql:
-    image: mysql:8
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: route_planner_api
     restart: always
-    container_name: route_planner
     ports:
-      - '3306:3306'
+      - "3008:3000"
     environment:
-      MYSQL_DATABASE: route_planner
-      MYSQL_USER: route_planner
-      MYSQL_PASSWORD: route_planner
-      MYSQL_ROOT_PASSWORD: route_planner
-    volumes:
-      - mysql:/var/lib/mysql
-
-volumes:
-  mysql:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENV=prod

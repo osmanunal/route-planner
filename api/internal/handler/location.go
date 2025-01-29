@@ -40,7 +40,8 @@ func (h LocationHandler) GetByID(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(bmodel.Response{Error: errorx.InternalServerError})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(bmodel.Response{Data: location})
+	vm := viewmodel.LocationResponse{}.ToViewModel(location)
+	return ctx.Status(fiber.StatusOK).JSON(bmodel.Response{Data: vm})
 }
 
 func (h LocationHandler) Create(ctx *fiber.Ctx) error {
@@ -72,7 +73,7 @@ func (h LocationHandler) Update(ctx *fiber.Ctx) error {
 	}
 
 	var vm viewmodel.LocationRequest
-	if err := ctx.BodyParser(&vm); err != nil {
+	if err = ctx.BodyParser(&vm); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: err.Error()})
 	}
 
@@ -99,4 +100,28 @@ func (h LocationHandler) Delete(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.SendStatus(fiber.StatusOK)
+}
+
+func (h LocationHandler) GetRoute(ctx *fiber.Ctx) error {
+	var vm viewmodel.LocationSortByDistanceRequest
+	if err := ctx.BodyParser(&vm); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: err.Error()})
+	}
+
+	if errors := utils.Validate(vm); len(errors) > 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bmodel.Response{Error: errors[0]})
+	}
+
+	m := vm.ToDBModel(model.Location{})
+	locations, count, err := h.LocationService.GetRoute(ctx.Context(), &m)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(bmodel.Response{Error: errorx.InternalServerError})
+	}
+
+	var responseVM []viewmodel.LocationSortByDistanceResponse
+	for _, location := range locations {
+		responseVM = append(responseVM, viewmodel.LocationSortByDistanceResponse{}.ToViewModel(location))
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(bmodel.Response{Data: responseVM, DataCount: count})
 }

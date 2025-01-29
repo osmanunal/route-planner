@@ -15,6 +15,7 @@ func Setup(app *fiber.App, db *bun.DB) {
 	api := app.Group("/api")
 
 	api.Get("/location", locationHandler.GetAll)
+	api.Get("/location/route", locationHandler.GetRoute)
 	api.Get("/location/:id", locationHandler.GetByID)
 	api.Post("/location", locationHandler.Create)
 	api.Put("/location/:id", locationHandler.Update)

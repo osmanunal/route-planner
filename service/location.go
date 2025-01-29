@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"route-planner/model"
+	"sort"
 
 	"github.com/uptrace/bun"
 )
@@ -13,6 +14,7 @@ type ILocationService interface {
 	Create(ctx context.Context, m *model.Location) error
 	Update(ctx context.Context, m model.Location) error
 	Delete(ctx context.Context, id int64) error
+	GetRoute(ctx context.Context, route *model.Location) ([]model.Location, int, error)
 }
 
 type LocationService struct {
@@ -50,4 +52,24 @@ func (s *LocationService) Update(ctx context.Context, m model.Location) error {
 func (s *LocationService) Delete(ctx context.Context, id int64) error {
 	_, err := s.DB.NewDelete().Model(&model.Location{}).Where("id = ?", id).Exec(ctx)
 	return err
+}
+
+func (s *LocationService) GetRoute(ctx context.Context, route *model.Location) ([]model.Location, int, error) {
+	var locations []model.Location
+
+	_, err := s.DB.NewSelect().Model(&locations).ScanAndCount(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for i := range locations {
+		locations[i].HaversineDistance(route.Latitude, route.Longitude)
+
+	}
+
+	sort.Slice(locations, func(i, j int) bool {
+		return locations[i].Distance < locations[j].Distance
+	})
+
+	return locations, len(locations), nil
 }

@@ -19,6 +19,8 @@ services:
       - ENV=prod
     networks:
       - route_planner_network
+    depends_on:
+        - mysql
 
   mysql:
     image: mysql:8
